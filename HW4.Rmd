@@ -1,0 +1,205 @@
+---
+title: "hw4"
+author: "Bradley Haren"
+date: "10/28/2021"
+output: html_document
+---
+
+Q1. Consider chemical.csv
+
+1. Fit a multiple regression model relating CO2 product ( y ) to total solvent ( x 6 ) and hydrogen consumption ( x 7 ). Write the equation of the fitted regression line.
+
+```{r}
+chemical = read.csv("./chemical.csv")
+mlr = lm(y ~ x6 + x7, data=chemical)
+summary(mlr)
+```
+
+Equation of fitted line:
+y_hat = 2.526460 + 0.018522(x6) + 2.185753(x7)
+
+2. State the assumptions about linear regression that you made for fitting the above model. 
+
+a) The relationship between y and x6 and x7 is approximately linear
+b) The random error term has 0 mean and constant variance
+c) Errors are uncorrelated
+d) Errors are normally distributed
+
+3. Construct scatter plots for response variable vs. the regressors. Do they support the assumption on linearity?
+
+```{r}
+chemical.subset = chemical[c("y", "x6", "x7")]
+pairs(chemical.subset)
+```
+
+Based on the pairs plot, it seems that there is a strong linear relationship between x6 and y. It's harder to tell for x7 and y, but it seems like there is a very slight linear relationship between the two.
+
+4. Plot the residual errors against the regressor variables. What assumption of linear model can be checked using this plot? Report your finding.
+
+```{r}
+plot(chemical$x6, mlr$residuals)
+abline(h=0)
+
+plot(chemical$x7, mlr$residuals)
+abline(h=0)
+```
+
+Here we are checking for linearity. We do have what seems to be a mean of 0, and it looks like variance is relatively the same throughout the plot (for both x6 and x7), so this is good.
+
+5. Plot the residual errors against the fitted values. What assumption of linear model can be checked using this plot? Report your finding.
+
+```{r}
+plot(mlr$fitted.values, mlr$residuals)
+abline(h=0)
+```
+
+Here we are checking for a 0 mean and a constant variance. The mean does seem to be 0, but the variance goes from small to large as we go from left to right on this plot.
+
+6. Plot the residual errors against the row numbers sorted by regressor variables. What assumption of linear model can be checked using this plot? Report your finding.
+
+```{r}
+plot(1:nrow(chemical), mlr$residuals[sort(chemical$x6, index.return=T)$ix],)
+abline(h=0)
+plot(1:nrow(chemical), mlr$residuals[sort(chemical$x7, index.return=T)$ix],)
+abline(h=0)
+```
+
+Here we are checking on independence. It is hard to say that there is any discernable pattern for x7 or x6. However, it does look like x6 has differing variability amongst the error terms. Other than this, both plots do seem to be centered on a mean of 0.
+
+7. Construct a normal probability plot. What assumption of linear model can be checked using this plot? Report your finding.
+
+```{r}
+qqnorm(mlr$residuals)
+qqline(mlr$residuals)
+```
+
+The Q-Q plot is used to test for normality of error terms. In this case, the tails of the Q-Q plot seem to fall off the Q-Q line. This leads me to believe that this data may come from a light tailed distribution.
+
+8. Perform Shapiro-Wilk test for normality. Report your finding.
+```{r}
+shapiro.test(mlr$residuals)
+```
+H0: the errors follow a normal distribution vs. H1: the errors do not follow normal distribution
+
+The shapiro test here gives a p-value of 0.6981. This means that we fail to reject the null, meaning that we have some evidence that the errors do in fact follow the normal distribution.
+
+################################################################################
+Q2
+################################################################################
+
+Q2. Consider the following data set from a windmill. 
+
+1. Fit a SLR model by regressing y on x. Write the equation of the fitted model.
+
+```{r}
+windmill = read.csv("./windmill.csv")
+slr = lm(y ~ x, data=windmill)
+summary(slr)
+```
+
+Equation of fitted line:
+y_hat = 0.13088 + 0.24115(x)
+
+2. State the assumptions about linear regression that you made for fitting the above model.
+
+a) The relationship between y and x is not exactly linear
+b) Zero mean and constant variance of error terms is not satisfied
+c) Errors are uncorrelated
+d) Errors are normally distributed
+
+3. Verify each assumption and report your finding.
+a) Check for linearity
+```{r}
+plot(windmill$x, slr$residuals)
+abline(h=0)
+
+#plot(dat$x, dat$y)
+```
+
+Here we are checking for linearity.Base one the scatter plot, we can see that the relationship between x and y is not exactly linear
+
+b) Check for zero mean and constant variance of random error
+```{r}
+plot(slr$fitted.values, slr$residuals)
+abline(h=0)
+```
+
+The residual plot for checking zero mean and constant variance of error terms shows non-random pattern. As we scan from left to right the vertical mean changes from negative to positive and then negative within thin vertical strips. This is violating the zero-mean assumption. The spread of the residual across the thin 
+strips are not uniform as well. This suggests non-constant variance for error terms.
+
+c) Check for independence of random error
+```{r}
+plot(1:nrow(windmill), slr$residuals[sort(windmill$x, index.return=T)$ix],)
+abline(h=0)
+```
+
+The residual plot for checking independence of error are mostly satisfactory. Plot do seem to be centered on a mean of 0.
+
+d) Check for normality of random error
+```{r}
+qqnorm(mlr$residuals)
+qqline(mlr$residuals)
+```
+
+The Q-Q plot is used to test for normality of error terms. In this case, the tails of the Q-Q plot seem to fall off the Q-Q line. This leads me to believe that this data may come from a light tailed distribution.
+
+```{r}
+shapiro.test(mlr$residuals)
+```
+H0: the errors follow a normal distribution vs. H1: the errors do not follow normal distribution
+
+Also, the shapiro test here gives a p-value of 0.1188. This means that we fail to reject the null, meaning that we have some evidence that the errors do in fact follow the normal distribution.
+
+4. If some of the model assumptions are violated apply an appropriate transformation and fit the model again.
+```{r}
+windmill$y_tran <- (windmill$y)^3
+plot(windmill$x, windmill$y_tran)
+slr2 <- lm(y_tran ~ x, data=windmill)
+summary(slr2)
+```
+5. Verify the assumptions of linear model in the new model and report your finding.
+After apply an approriate transformation we have those assumptions
+a) The relationship between y and x is not linear
+```{r}
+plot(windmill$x, slr2$residuals)
+abline(h=0)
+```
+We notice a significant improvement in the plot. The x vs y indicates an almost linear relationship.   
+
+b) Zero mean and constant variance of error terms is satisfied
+```{r}
+plot(slr2$fitted.values, slr2$residuals)
+abline(h=0)
+```
+We notice striking improvement in the residual plots. The zero mean and constant variance for error terms are satisfactory now cause the spread of the residual across the thin strips are uniform.
+
+c) Errors are uncorrelated
+```{r}
+plot(1:nrow(windmill), slr2$residuals[sort(windmill$x, index.return=T)$ix],)
+abline(h=0)
+```
+d) Errors are normally distributed
+```{r}
+qqnorm(slr2$residuals)
+qqline(slr2$residuals)
+
+shapiro.test(slr2$residuals)
+```
+The Q-Q plot is used to test for normality of error terms. As we can see, all the dots fall on the Q-Q line.
+
+Also, the shapiro test here gives a p-value of 0.3936. This means that we fail to reject the null, meaning that we have some evidence that the errors do in fact follow the normal distribution.(H0: the errors follow a normal distribution vs. H1: the errors do not follow normal distribution)
+
+6. Estimate the mean DC_output for where wind_velocity = 5 mph.
+Prediction for mean y_tran
+```{r}
+newwindmill <- data.frame(x=5)
+predict(slr2, newdata = newwindmill, interval = "confidence", level = 0.95)
+```
+
+Prediction on original scale
+```{r}
+(predict(slr2, newdata = newwindmill, interval = "confidence", level = 0.95))^(1/3)
+```
+We got the mean DC_output for where wind_velocity = 5 mph
+    fit      lwr      upr
+1.581609  1.526204  1.633383
